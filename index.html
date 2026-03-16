@@ -1,0 +1,501 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>セントラルドグマ学習アプリ - 基本編</title>
+    <style>
+        /* デザイン設定 */
+        body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f0f4f8; color: #333; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .container { background: white; width: 100%; max-width: 650px; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; position: relative; display: flex; flex-direction: column; }
+        
+        h2 { color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 20px; font-size: 1.5rem; margin-top: 0; }
+        
+        /* メインコンテンツエリア（高さを確保してレイアウト崩れ防止） */
+        .content-area { flex-grow: 1; margin-bottom: 20px; }
+
+        /* フッター（プログレスバー） */
+        .footer-area { margin-top: auto; border-top: 1px solid #eee; padding-top: 15px; }
+        .progress-info { display: flex; justify-content: space-between; font-size: 0.9em; color: #7f8c8d; margin-bottom: 5px; font-weight: bold; }
+        .progress-track { width: 100%; height: 10px; background-color: #ecf0f1; border-radius: 5px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: #3498db; width: 0%; transition: width 0.4s ease; }
+
+        /* シーケンス表示エリア */
+        .sequence-box { font-family: 'Courier New', monospace; font-size: 1.2em; background: #eef; padding: 15px; border-radius: 8px; margin: 15px 0; word-break: break-all; letter-spacing: 2px; line-height: 1.5; }
+        .label { font-size: 0.8em; color: #666; margin-right: 5px; user-select: none; }
+
+        /* ボタン類 */
+        .btn { background-color: #3498db; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; margin: 5px; transition: background 0.2s; touch-action: manipulation; }
+        .btn:hover { background-color: #2980b9; }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-secondary { background-color: #95a5a6; }
+        .btn-secondary:hover { background-color: #7f8c8d; }
+        .btn-input { width: 60px; height: 60px; font-size: 20px; font-weight: bold; margin: 5px; }
+        .btn-danger { background-color: #e74c3c; }
+        .btn-danger:hover { background-color: #c0392b; }
+        .btn-retry { background-color: #fff; color: #721c24; border: 1px solid #721c24; padding: 5px 10px; margin-top: 10px; border-radius: 4px; cursor: pointer; }
+        .btn-sample { background-color: #27ae60; font-size: 0.9em; padding: 8px 16px; }
+
+        /* クイズ選択肢 */
+        .btn-option { display: block; width: 100%; margin: 8px 0; background-color: #fff; color: #3498db; border: 2px solid #3498db; padding: 10px; border-radius: 6px; font-size: 1rem; cursor: pointer; }
+        .btn-option:hover { background-color: #3498db; color: white; }
+
+        /* コドン選択 */
+        .codon-btn { display: inline-block; padding: 5px; margin: 2px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background: #fff; font-family: monospace; font-size: 1.1em; }
+        .codon-btn:hover { background-color: #e0f7fa; }
+        
+        /* コドン表テーブル */
+        .codon-table-container { overflow-x: auto; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; }
+        .codon-table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
+        .codon-table th, .codon-table td { border: 1px solid #ddd; padding: 4px; text-align: center; }
+        .codon-table th { background-color: #f8f9fa; font-weight: bold; }
+        .codon-table td { font-family: monospace; }
+        .highlight-codon { background-color: #fff3cd; font-weight: bold; }
+
+        /* フィードバック */
+        .feedback { margin: 15px 0; font-weight: bold; padding: 10px; border-radius: 6px; display: none; animation: fadeIn 0.3s; }
+        .feedback.success { background-color: #d4edda; color: #155724; }
+        .feedback.error { background-color: #f8d7da; color: #721c24; }
+
+        .protein-img { width: 200px; height: auto; margin: 20px auto; display: block; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <p>読み込み中...</p>
+</div>
+
+<script>
+    // --- サウンド管理モジュール ---
+    const Sound = {
+        ctx: null,
+        init: function() {
+            if (!this.ctx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioContext();
+            }
+            if (this.ctx.state === 'suspended') { this.ctx.resume(); }
+        },
+        playTone: function(freq, type, duration, vol = 0.1) {
+            this.init();
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + duration);
+        },
+        playClick: function() { this.playTone(800, 'sine', 0.1, 0.1); },
+        playCorrect: function() {
+            this.init();
+            const now = this.ctx.currentTime;
+            this.createOscillator(523.25, 'sine', now, 0.2); // C5
+            this.createOscillator(659.25, 'sine', now + 0.15, 0.4); // E5
+        },
+        playWrong: function() { this.playTone(150, 'sawtooth', 0.4, 0.15); },
+        playFanfare: function() {
+            this.init();
+            const now = this.ctx.currentTime;
+            this.createOscillator(523.25, 'square', now, 0.2);
+            this.createOscillator(659.25, 'square', now + 0.2, 0.2);
+            this.createOscillator(783.99, 'square', now + 0.4, 0.6);
+        },
+        createOscillator: function(freq, type, startTime, duration) {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(0.1, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + duration);
+        }
+    };
+
+    // --- アプリケーションの状態管理 ---
+    const state = {
+        step: 1,
+        dna: "",
+        mrna: "",
+        startCodonIndex: -1,
+        stopCodonIndex: -1,
+        aminoAcids: [],
+        totalSteps: 9
+    };
+
+    const codonTable = {
+        'AUG': 'Met', 'UUU': 'Phe', 'UUC': 'Phe', 'UUA': 'Leu', 'UUG': 'Leu',
+        'UCU': 'Ser', 'UCC': 'Ser', 'UCA': 'Ser', 'UCG': 'Ser',
+        'UAU': 'Tyr', 'UAC': 'Tyr', 'UAA': 'Stop', 'UAG': 'Stop',
+        'UGU': 'Cys', 'UGC': 'Cys', 'UGA': 'Stop', 'UGG': 'Trp',
+        'CUU': 'Leu', 'CUC': 'Leu', 'CUA': 'Leu', 'CUG': 'Leu',
+        'CCU': 'Pro', 'CCC': 'Pro', 'CCA': 'Pro', 'CCG': 'Pro',
+        'CAU': 'His', 'CAC': 'His', 'CAA': 'Gln', 'CAG': 'Gln',
+        'CGU': 'Arg', 'CGC': 'Arg', 'CGA': 'Arg', 'CGG': 'Arg',
+        'AUU': 'Ile', 'AUC': 'Ile', 'AUA': 'Ile', 
+        'ACU': 'Thr', 'ACC': 'Thr', 'ACA': 'Thr', 'ACG': 'Thr',
+        'AAU': 'Asn', 'AAC': 'Asn', 'AAA': 'Lys', 'AAG': 'Lys',
+        'AGU': 'Ser', 'AGC': 'Ser', 'AGA': 'Arg', 'AGG': 'Arg',
+        'GUU': 'Val', 'GUC': 'Val', 'GUA': 'Val', 'GUG': 'Val',
+        'GCU': 'Ala', 'GCC': 'Ala', 'GCA': 'Ala', 'GCG': 'Ala',
+        'GAU': 'Asp', 'GAC': 'Asp', 'GAA': 'Glu', 'GAG': 'Glu',
+        'GGU': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly'
+    };
+
+    // --- コドン表HTML生成 ---
+    function generateCodonTableHtml() {
+        const bases = ['U', 'C', 'A', 'G'];
+        let html = '<div class="codon-table-container"><table class="codon-table">';
+        html += '<tr><th>1\\2</th><th>U</th><th>C</th><th>A</th><th>G</th><th>3</th></tr>';
+        
+        bases.forEach(first => {
+            html += `<tr><th rowspan="4">${first}</th>`;
+            bases.forEach(second => {
+                html += `<td rowspan="4" style="vertical-align:top;">`;
+                bases.forEach(third => {
+                    const codon = first + second + third;
+                    const amino = codonTable[codon];
+                    const color = amino === 'Stop' ? 'color:red;' : (amino === 'Met' ? 'color:blue;font-weight:bold;' : '');
+                    html += `<div style="${color}">${codon} : ${amino}</div>`;
+                });
+                html += `</td>`;
+            });
+            html += `<td style="border-bottom:1px solid #eee;">U</td></tr>`;
+            html += `<tr><td style="border-bottom:1px solid #eee;">C</td></tr>`;
+            html += `<tr><td style="border-bottom:1px solid #eee;">A</td></tr>`;
+            html += `<tr><td>G</td></tr>`;
+        });
+        html += '</table></div>';
+        return html;
+    }
+
+    // --- メイン描画関数 ---
+    function render() {
+        const app = document.getElementById('app');
+        if (!app) return;
+        
+        // 進捗計算 (step 1=0%, step 9=100%)
+        const progress = ((state.step - 1) / (state.totalSteps - 1)) * 100;
+
+        let stepContent = '';
+        switch(state.step) {
+            case 1: stepContent = getStep1Html(); break;
+            case 2: stepContent = getStep2Html(); break;
+            case 3: stepContent = getStep3Html(); break;
+            case 4: stepContent = getStep4Html(); break;
+            case 5: stepContent = getStep5Html(); break;
+            case 6: stepContent = getStep6Html(); break;
+            case 7: stepContent = getStep7Html(); break;
+            case 8: stepContent = getStep8Html(); break;
+            case 9: stepContent = getStep9Html(); break;
+            default: stepContent = '<p>エラー</p>';
+        }
+
+        // 全体の構成：コンテンツエリア + フッター（プログレスバー）
+        app.innerHTML = `
+            <div class="content-area">
+                ${stepContent}
+            </div>
+            <div class="footer-area">
+                <div class="progress-info">
+                    <span>進捗状況</span>
+                    <span>Step ${state.step} / ${state.totalSteps}</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-bar" style="width: ${progress}%"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    // --- HTML生成関数群 ---
+    function getStep1Html() {
+        return `
+            <h2>1. ターゲット遺伝子の入力</h2>
+            <p>DNA配列を入力してください。</p>
+            <div class="sequence-box">
+                <span class="label">5'-</span>${state.dna}<span class="label">-3'</span>
+            </div>
+            <div>
+                <button class="btn btn-input" onclick="Sound.playClick(); addBase('A')">A</button>
+                <button class="btn btn-input" onclick="Sound.playClick(); addBase('T')">T</button>
+                <button class="btn btn-input" onclick="Sound.playClick(); addBase('G')">G</button>
+                <button class="btn btn-input" onclick="Sound.playClick(); addBase('C')">C</button>
+            </div>
+            <div style="margin-top:10px;">
+                <button class="btn btn-danger" onclick="Sound.playClick(); clearDNA()">クリア</button>
+                <button class="btn btn-sample" onclick="Sound.playClick(); setSampleDNA()">サンプルを入力</button>
+            </div>
+            <br>
+            <button class="btn" onclick="Sound.playClick(); checkAndNextStep()" ${state.dna.length < 3 ? 'disabled' : ''}>入力完了</button>
+            <div id="feedback" class="feedback"></div>
+        `;
+    }
+
+    function getStep2Html() {
+        return `
+            <h2>2. クイズ：転写</h2>
+            <p>DNAからmRNAへ情報がコピーされる反応を何という？</p>
+            <div>
+                <button class="btn btn-option" onclick="checkQuiz1(this, true)">転写</button>
+                <button class="btn btn-option" onclick="checkQuiz1(this, false)">複製</button>
+                <button class="btn btn-option" onclick="checkQuiz1(this, false)">翻訳</button>
+                <button class="btn btn-option" onclick="checkQuiz1(this, false)">増幅</button>
+            </div>
+            <div id="feedback" class="feedback"></div>
+            <div style="margin-top:20px;">
+                <button class="btn btn-secondary" onclick="prevStep()">戻る</button>
+                <button id="next-btn" class="btn" style="display:none;" onclick="Sound.playClick(); nextStep()">次へ</button>
+            </div>
+        `;
+    }
+
+    function getStep3Html() {
+        state.mrna = state.dna.replace(/T/g, 'U');
+        return `
+            <h2>3. 転写完了</h2>
+            <p>mRNAの配列に変換されました！</p>
+            <div class="sequence-box">
+                <span class="label">mRNA:</span><br>
+                ${state.mrna}
+            </div>
+            <p>T（チミン）が U（ウラシル）に置き換わりました。</p>
+            <div style="margin-top:20px;">
+                <button class="btn btn-secondary" onclick="prevStep()">戻る</button>
+                <button class="btn" onclick="Sound.playClick(); nextStep()">次へ</button>
+            </div>
+        `;
+    }
+
+    function getStep4Html() {
+        return `
+            <h2>4. クイズ：翻訳</h2>
+            <p>ペプチド結合の形成を触媒するRNAはどれ？</p>
+            <div>
+                <button class="btn btn-option" onclick="checkQuiz2(this, false)">tRNA</button>
+                <button class="btn btn-option" onclick="checkQuiz2(this, true)">rRNA</button>
+                <button class="btn btn-option" onclick="checkQuiz2(this, false)">mRNA</button>
+                <button class="btn btn-option" onclick="checkQuiz2(this, false)">miRNA</button>
+            </div>
+            <div id="feedback" class="feedback"></div>
+            <div style="margin-top:20px;">
+                <button class="btn btn-secondary" onclick="prevStep()">戻る</button>
+                <button id="next-btn" class="btn" style="display:none;" onclick="Sound.playClick(); nextStep()">次へ</button>
+            </div>
+        `;
+    }
+
+    function getStep5Html() {
+        const codons = state.mrna.match(/.{1,3}/g) || [];
+        const codonsHtml = codons.map((c, i) => 
+            `<span class="codon-btn" onclick="selectStartCodon(${i}, '${c}')">${c}</span>`
+        ).join('');
+
+        return `
+            <h2>5. 開始コドンの選択</h2>
+            <p>下のコドン表を参考に、「開始コドン(AUG)」をタップ！</p>
+            <div class="sequence-box">${codonsHtml}</div>
+            <div id="feedback" class="feedback"></div>
+            
+            <details>
+                <summary style="cursor:pointer; color:#3498db; margin:10px;">コドン表を表示する</summary>
+                ${generateCodonTableHtml()}
+            </details>
+
+            <div style="margin-top:20px;">
+                <button class="btn btn-secondary" onclick="prevStep()">戻る</button>
+            </div>
+        `;
+    }
+
+    function getStep6Html() {
+        const codons = state.mrna.match(/.{1,3}/g) || [];
+        const codonsHtml = codons.map((c, i) => {
+            if (i <= state.startCodonIndex) return `<span style="color:#ccc; margin:2px;">${c}</span>`;
+            return `<span class="codon-btn" onclick="selectStopCodon(${i}, '${c}')">${c}</span>`;
+        }).join('');
+
+        return `
+            <h2>6. 終止コドンの選択</h2>
+            <p>コドン表を参考に、「終止コドン」をタップ！</p>
+            <div class="sequence-box">${codonsHtml}</div>
+            <div id="feedback" class="feedback"></div>
+            
+            <details>
+                <summary style="cursor:pointer; color:#3498db; margin:10px;">コドン表を表示する</summary>
+                ${generateCodonTableHtml()}
+            </details>
+
+            <div style="margin-top:20px;">
+                <button class="btn btn-secondary" onclick="prevStep()">戻る</button>
+            </div>
+        `;
+    }
+
+    function getStep7Html() {
+        return `
+            <h2>7. 翻訳作業（手動）</h2>
+            <p>下の表を見て、アミノ酸配列をノートに書き出しましょう。</p>
+            <div class="sequence-box">${state.mrna}</div>
+            
+            ${generateCodonTableHtml()}
+
+            <div style="margin-top:20px;">
+                <button class="btn btn-secondary" onclick="prevStep()">戻る</button>
+                <button class="btn" onclick="Sound.playClick(); calcTranslation(); nextStep();">変換（答え合わせ）</button>
+            </div>
+        `;
+    }
+
+    function getStep8Html() {
+        const aminoStr = state.aminoAcids.join('-');
+        return `
+            <h2>8. 答え合わせ</h2>
+            <p>アミノ酸配列に変換されました！一致していますか？</p>
+            <div class="sequence-box" style="font-weight:bold; color:#d35400;">${aminoStr}</div>
+            <div style="margin-top:20px;">
+                <button class="btn btn-secondary" onclick="prevStep()">戻る</button>
+                <button class="btn" onclick="Sound.playClick(); nextStep()">Yes (一致した)</button>
+            </div>
+        `;
+    }
+
+    function getStep9Html() {
+        Sound.playFanfare();
+        return `
+            <h2>Congratulation!!</h2>
+            <p>タンパク質が合成されました！</p>
+            
+            <img src="protein.png" class="protein-img" alt="ここにprotein.pngが表示されます">
+            
+            <div style="text-align:left; background:#fff; padding:15px; border:1px solid #ddd; border-radius:8px; margin-top:20px;">
+                <strong>学習課題</strong>
+                <ol>
+                    <li>「転写」について説明せよ。</li>
+                    <li>「翻訳」について説明せよ。</li>
+                    <li>GFPについて調べよ。</li>
+                </ol>
+            </div>
+            <br>
+            <button class="btn" onclick="Sound.playClick(); location.reload()">最初に戻る</button>
+        `;
+    }
+
+    // --- ロジック関数 ---
+    function addBase(base) { state.dna += base; render(); }
+    function clearDNA() { state.dna = ""; render(); }
+    function setSampleDNA() { state.dna = "ATGACTTTTTCTTATGGTGTTTGA"; render(); }
+
+    function prevStep() {
+        if (state.step > 1) {
+            state.step--;
+            render();
+        }
+    }
+
+    function nextStep() {
+        if (state.step < state.totalSteps) {
+            state.step++;
+            render();
+        }
+    }
+
+    function checkAndNextStep() {
+        const mrna = state.dna.replace(/T/g, 'U');
+        const codons = mrna.match(/.{1,3}/g) || [];
+        if (!codons.includes('AUG')) {
+            Sound.playWrong();
+            showFeedback('エラー：配列に「開始コドン（ATG）」が含まれていないか、読み枠がずれています。', 'error');
+            return;
+        }
+        const stops = ['UAA', 'UAG', 'UGA'];
+        if (!codons.some(c => stops.includes(c))) {
+            Sound.playWrong();
+            showFeedback('エラー：配列に「終止コドン」が含まれていません。', 'error');
+            return;
+        }
+        nextStep();
+    }
+    
+    function showFeedback(msg, type) {
+        const fb = document.getElementById('feedback');
+        fb.style.display = 'block';
+        fb.className = 'feedback ' + type;
+        fb.innerHTML = msg;
+    }
+
+    function hideFeedback() {
+        document.getElementById('feedback').style.display = 'none';
+    }
+
+    function checkQuiz1(btn, isCorrect) {
+        if (isCorrect) {
+            Sound.playCorrect();
+            showFeedback('正解！DNAからmRNAが合成されます。', 'success');
+            document.getElementById('next-btn').style.display = 'inline-block';
+        } else {
+            Sound.playWrong();
+            showFeedback(`残念！「転写」を選んでください。<br><button class="btn-retry" onclick="Sound.playClick(); hideFeedback()">再挑戦</button>`, 'error');
+        }
+    }
+
+    function checkQuiz2(btn, isCorrect) {
+        if (isCorrect) {
+            Sound.playCorrect();
+            showFeedback('正解！rRNA（リボソームRNA）が触媒活性を持ちます。', 'success');
+            document.getElementById('next-btn').style.display = 'inline-block';
+        } else {
+            Sound.playWrong();
+            showFeedback(`不正解。実際に結合させるのはrRNAです。<br><button class="btn-retry" onclick="Sound.playClick(); hideFeedback()">再挑戦</button>`, 'error');
+        }
+    }
+
+    function selectStartCodon(index, codon) {
+        if (codon === 'AUG') {
+            Sound.playCorrect();
+            state.startCodonIndex = index;
+            showFeedback('正解！翻訳を開始します。', 'success');
+            setTimeout(nextStep, 1000);
+        } else {
+            Sound.playWrong();
+            showFeedback(`${codon} は開始コドンではありません。`, 'error');
+        }
+    }
+
+    function selectStopCodon(index, codon) {
+        if (['UAA', 'UAG', 'UGA'].includes(codon)) {
+            Sound.playCorrect();
+            state.stopCodonIndex = index;
+            showFeedback('正解！翻訳を終了します。', 'success');
+            setTimeout(nextStep, 1000);
+        } else {
+            Sound.playWrong();
+            showFeedback(`それは終止コドンではありません。`, 'error');
+        }
+    }
+
+    function calcTranslation() {
+        const codons = state.mrna.match(/.{1,3}/g) || [];
+        state.aminoAcids = [];
+        for (let i = state.startCodonIndex; i < state.stopCodonIndex; i++) {
+            const c = codons[i];
+            state.aminoAcids.push(codonTable[c] || '?');
+        }
+    }
+
+    window.onload = function() {
+        render();
+        document.body.addEventListener('click', function() { Sound.init(); }, { once: true });
+    };
+</script>
+</body>
+</html>
