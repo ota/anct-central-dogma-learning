@@ -56,6 +56,7 @@
         .license-box ul { margin: 6px 0; padding-left: 20px; }
         .license-box li { margin: 4px 0; }
         .license-box summary { cursor: pointer; color: #3498db; font-weight: bold; }
+        .readme-pre { font-family: inherit; font-size: 0.82em; line-height: 1.65; white-space: pre-wrap; word-break: break-word; margin: 0; padding: 10px 4px 4px; }
         .worksheet-box { text-align: left; background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-top: 15px; }
         .worksheet-box ol { padding-left: 20px; }
         .worksheet-box li { margin: 8px 0; }
@@ -145,6 +146,56 @@ const C = {
             </ul>
             <p><strong>作成者：</strong>本田 晴香、太田 健吾</p>
             <p><strong>出典表示：</strong>「セントラルドグマ学習アプリ（真核細胞）- 基本編」 ― CC BY-NC 4.0</p>`,
+            readmeTitle: 'README（ライセンス全文・クレジット詳細）',
+            readmeText: `セントラルドグマ学習アプリ（真核細胞）- 基本編
+
+この README（テキスト版）は、以下のクレジットとライセンス情報を一本化して管理します。
+- アプリ（コード）
+- 教材コンテンツ
+- GFP 構造イラスト（PDB ID: 1EMA）
+
+==============================
+概要
+- 本教材は、アプリで学習指示・クイズを提示し、ワークシートに手書きで解答する設計です。操作性と記憶定着の両立を意図しています。
+
+クイックスタート
+1) アプリを起動し、手順に沿ってクイズを解く。
+2) Step 18 でコドン表を参照し、アミノ酸配列を 3 文字表記でワークシートへ記入。
+3) Step 19 で答え合わせ。必要に応じて解説を参照。
+
+==============================
+ライセンス
+- コード（app/）: MIT License（SPDX: MIT）。要件は、配布物に著作権表示とライセンス全文を保持すること。
+- 教材コンテンツ（content/、図版・PDF・ワークシート等）: CC BY-NC 4.0。非営利の教育目的に限り、共有・改変可。TASL（Title / Author / Source / License）での帰属と、変更の有無の明示をお願いします。
+- TASL の実務: 画面などのスペースが限られる場合は、短縮表記と本 README へのリンク（または参照）でも可。
+
+==============================
+クレジット（Credits / Attribution）
+1) アプリ画面の図版：GFP 構造イラスト（PDB ID: 1EMA）
+- タイトル: 「GFP 構造イラスト - PDB ID: 1EMA」
+- 作者: 本田 晴香（レンダリング／配色変更）
+- ツール: Molmil（PDBj）。引用推奨: Bekker G-J., Nakamura H., Kinjo A.R. (2016) Molmil: a molecular viewer for the PDB and beyond. J Cheminformatics. DOI: 10.1186/s13321-016-0155-1
+- 出典（データ）: RCSB PDB エントリ「1EMA」。DOI: 10.2210/pdb1ema/pdb
+- 一次論文: Ormö M., Cubitt A.B., Kallio K., Gross L.A., Tsien R.Y., Remington S.J. (1996) Crystal structure of the Aequorea victoria green fluorescent protein. Science 273:1392-1395. DOI: 10.1126/science.273.5280.1392
+- ライセンス:
+  - 本イラスト（画像）: CC BY-NC 4.0（二次著作物。改変あり: 配色・表示様式・ラベル）
+  - もととなる PDB データ: CC0（Public Domain）。エントリ著者・DOI への帰属表示を推奨。
+- PDB の推奨引用形式: PDB ID + DOI（必要に応じて一次論文も）。
+
+==============================
+第三者素材に関する方針メモ（再利用者向け）
+- PDB（wwPDB）アーカイブのデータは CC0（Public Domain）。帰属（エントリ著者・DOI）は推奨。
+- RCSB PDB サイト掲載物のうち、PDB-101「Molecule of the Month」は 図（イラスト）= CC BY 4.0、記事本文 = 著作権保護（転載は要許諾・改変不可）。
+- PDBj サイトの一般コンテンツは CC BY 4.0。Molecule of the Month 日本語訳本文は PDBj／訳者の著作権で要許諾。
+
+==============================
+近接表示用の短縮クレジット（UI／紙面）
+- アプリ画面（GFP 図の下）:
+  「GFP（PDB 1EMA）- 画像作成：本田（Molmil／配色変更）。データ出典：RCSB PDB（DOI: 10.2210/pdb1ema/pdb）。詳細：README を参照」
+
+==============================
+変更履歴
+- v1.0.0（2026-03-18） 初版（テキスト版 README、日本語）`,
             start: '学習を開始する',
             quickStart: 'クイックスタート',
             quickBody: `<ol>
@@ -332,6 +383,56 @@ const C = {
             </ul>
             <p><strong>Authors:</strong> Haruka Honda and Kengo Ota</p>
             <p><strong>Credit:</strong> "Central Dogma Learning App (Eukaryotic Cell) — Basic" — CC BY-NC 4.0</p>`,
+            readmeTitle: 'README (Full License & Credits)',
+            readmeText: `Central Dogma Learning App (Eukaryotic Cell) — Basic
+
+This README (text version) consolidates credits and licenses for:
+- App (code)
+- Educational content
+- GFP structure illustration (PDB ID: 1EMA)
+
+==============================
+Overview
+- The app presents prompts/quizzes and learners write answers by hand on a worksheet. The goal is to combine ease of use with better retention.
+
+Quick Start
+1) Launch the app and follow the steps.
+2) At Step 18, use the codon table and write the amino-acid sequence in 3-letter code on the worksheet.
+3) Step 19 checks the answer; expand explanations as needed.
+
+==============================
+Licensing
+- Code (app/): MIT License (SPDX: MIT). Requirement: keep copyright and the full license text in distributions.
+- Educational content (content/, figures, PDFs, worksheets): CC BY-NC 4.0. Free to share/adapt for noncommercial educational purposes with TASL attribution (Title / Author / Source / License) and indication of changes.
+- TASL best practice: when space is limited (e.g., UI captions), provide a short credit plus a link to this README for full details.
+
+==============================
+Credits / Attribution
+1) App screen figure: GFP structure illustration (PDB ID: 1EMA)
+- Title: GFP structure illustration — PDB ID: 1EMA
+- Author: Haruka Honda (rendering / recoloring)
+- Tool: Molmil (PDBj). Please cite: Bekker G-J., Nakamura H., Kinjo A.R. (2016) Molmil: a molecular viewer for the PDB and beyond. J Cheminformatics. DOI: 10.1186/s13321-016-0155-1
+- Source (data): RCSB PDB entry 1EMA. DOI: 10.2210/pdb1ema/pdb
+- Primary citation: Ormö M., Cubitt A.B., Kallio K., Gross L.A., Tsien R.Y., Remington S.J. (1996) Crystal structure of the Aequorea victoria green fluorescent protein. Science 273:1392–1395. DOI: 10.1126/science.273.5280.1392
+- Licenses:
+  - This illustration (image): CC BY-NC 4.0 (derivative; modified color scheme / layout / labels).
+  - Underlying PDB data: CC0 (Public Domain). Attribution of entry authors and DOI is encouraged.
+- Recommended PDB citation format: PDB ID + DOI (and the primary paper when available).
+
+==============================
+Notes for reusers of third-party materials
+- PDB (wwPDB) archive data are CC0 (Public Domain); attribution of entry authors and DOI is encouraged.
+- RCSB PDB site: for PDB-101 Molecule of the Month: illustrations are CC BY 4.0; article text is copyrighted and requires permission (no edits).
+- PDBj site: general content is CC BY 4.0; Japanese translations of Molecule of the Month articles are copyrighted by PDBj/translators (permission required).
+
+==============================
+Short credits for proximity (UI / print)
+- App screen (below the GFP figure):
+  GFP (PDB 1EMA) — image: Honda (Molmil / recolored). Data source: RCSB PDB (DOI: 10.2210/pdb1ema/pdb). See README for details.
+
+==============================
+Changelog
+- v1.0.0 (2026-03-18) Initial text-only README (English)`,
             start: 'Start Learning',
             quickStart: 'Quick Start',
             quickBody: `<ol>
@@ -578,6 +679,10 @@ function render() {
             <details style="margin-top:10px;">
                 <summary class="license-box" style="padding:10px 14px; cursor:pointer; font-weight:bold; color:#3498db;">${L.quickStart}</summary>
                 <div class="license-box" style="margin-top:0; border-top:none; border-radius:0 0 8px 8px; text-align:left;">${L.quickBody}</div>
+            </details>
+            <details style="margin-top:10px;">
+                <summary class="license-box" style="padding:10px 14px; cursor:pointer; font-weight:bold; color:#3498db;">${L.readmeTitle}</summary>
+                <div class="license-box" style="margin-top:0; border-top:none; border-radius:0 0 8px 8px;"><pre class="readme-pre">${L.readmeText}</pre></div>
             </details>
             <button class="btn btn-start" onclick="Sound.playClick(); startLearning()">${L.start}</button>
             </div>
