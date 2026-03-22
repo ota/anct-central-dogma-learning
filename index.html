@@ -138,15 +138,8 @@ const C = {
 
         landing: {
             desc: 'アプリで学習指示・クイズを提示し、ワークシートに手書きで解答する設計です。操作性と記憶定着の両立を意図しています。',
-            licenseTitle: 'ライセンスとクレジット',
-            licenseBody: `<ul>
-                <li><strong>コード（app）:</strong> MIT License — 配布物に著作権表示とライセンス全文を保持してください。</li>
-                <li><strong>教材コンテンツ・図版:</strong> CC BY-NC 4.0 — 非営利の教育目的に限り、共有・改変可。TASL での帰属と変更の有無の明示をお願いします。</li>
-                <li><strong>GFP 構造イラスト（PDB ID: 1EMA）:</strong> CC BY-NC 4.0 ／ 画像作成：本田 晴香（Molmil／配色変更）／ データ出典：RCSB PDB（DOI: 10.2210/pdb1ema/pdb）</li>
-            </ul>
-            <p><strong>作成者：</strong>本田 晴香、太田 健吾</p>
-            <p><strong>出典表示：</strong>「セントラルドグマ学習アプリ（真核細胞）- 基本編」 ― CC BY-NC 4.0</p>`,
-            readmeTitle: 'README（ライセンス全文・クレジット詳細）',
+            credit: '© 本田 晴香・太田 健吾 ／ コード: MIT License ／ 教材・図版: CC BY-NC 4.0',
+            readmeTitle: 'README（ライセンス・クレジット）',
             readmeText: `セントラルドグマ学習アプリ（真核細胞）- 基本編
 
 この README（テキスト版）は、以下のクレジットとライセンス情報を一本化して管理します。
@@ -375,15 +368,8 @@ const C = {
 
         landing: {
             desc: 'The app presents prompts and quizzes; write your answers by hand on a worksheet. Designed to combine ease of use with better retention.',
-            licenseTitle: 'License & Credits',
-            licenseBody: `<ul>
-                <li><strong>Code (app):</strong> MIT License — keep copyright and license text in distributions.</li>
-                <li><strong>Educational content & figures:</strong> CC BY-NC 4.0 — free to share/adapt for noncommercial educational purposes with TASL attribution and indication of changes.</li>
-                <li><strong>GFP structure illustration (PDB ID: 1EMA):</strong> CC BY-NC 4.0 / Image: Haruka Honda (Molmil / recolored) / Data source: RCSB PDB (DOI: 10.2210/pdb1ema/pdb)</li>
-            </ul>
-            <p><strong>Authors:</strong> Haruka Honda and Kengo Ota</p>
-            <p><strong>Credit:</strong> "Central Dogma Learning App (Eukaryotic Cell) — Basic" — CC BY-NC 4.0</p>`,
-            readmeTitle: 'README (Full License & Credits)',
+            credit: '© Haruka Honda & Kengo Ota ／ Code: MIT License ／ Content & figures: CC BY-NC 4.0',
+            readmeTitle: 'README (License & Credits)',
             readmeText: `Central Dogma Learning App (Eukaryotic Cell) — Basic
 
 This README (text version) consolidates credits and licenses for:
@@ -672,14 +658,10 @@ function render() {
             <div class="main-content">
             <h2>${t('appTitle')}</h2>
             <p>${L.desc}</p>
-            <details>
-                <summary class="license-box" style="padding:10px 14px; cursor:pointer; font-weight:bold; color:#3498db;">${L.licenseTitle}</summary>
-                <div class="license-box" style="margin-top:0; border-top:none; border-radius:0 0 8px 8px;">${L.licenseBody}</div>
-            </details>
-            <details style="margin-top:10px;">
-                <summary class="license-box" style="padding:10px 14px; cursor:pointer; font-weight:bold; color:#3498db;">${L.quickStart}</summary>
-                <div class="license-box" style="margin-top:0; border-top:none; border-radius:0 0 8px 8px; text-align:left;">${L.quickBody}</div>
-            </details>
+            <p style="font-size:0.82em; color:#777; margin:4px 0 12px;">${L.credit}</p>
+            <div class="license-box" style="text-align:left; margin-top:10px;">
+                <strong>${L.quickStart}</strong>${L.quickBody}
+            </div>
             <details style="margin-top:10px;">
                 <summary class="license-box" style="padding:10px 14px; cursor:pointer; font-weight:bold; color:#3498db;">${L.readmeTitle}</summary>
                 <div class="license-box" style="margin-top:0; border-top:none; border-radius:0 0 8px 8px;"><pre class="readme-pre">${L.readmeText}</pre></div>
