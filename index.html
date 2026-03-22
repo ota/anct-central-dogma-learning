@@ -7,7 +7,9 @@
     <style>
         body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f0f4f8; color: #333; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
         .container { background: white; width: 100%; max-width: 650px; padding: 0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; display: flex; flex-direction: column; }
-        .top-bar { display: flex; justify-content: flex-end; align-items: center; padding: 8px 15px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0; border-radius: 12px 12px 0 0; flex-shrink: 0; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0; border-radius: 12px 12px 0 0; flex-shrink: 0; }
+        .home-btn { background: none; border: none; font-size: 1.1em; cursor: pointer; color: #aaa; padding: 2px 6px; border-radius: 4px; line-height: 1; }
+        .home-btn:hover { color: #3498db; background: #e8f4fd; }
         .main-content { padding: 25px; display: flex; flex-direction: column; flex-grow: 1; }
         h2 { color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 20px; font-size: 1.5rem; margin-top: 0; }
         .content-area { flex-grow: 1; margin-bottom: 20px; }
@@ -45,8 +47,7 @@
         .feedback.success { background-color: #d4edda; color: #155724; display: block; }
         .feedback.error { background-color: #f8d7da; color: #721c24; display: block; }
         .protein-img { width: 240px; height: auto; margin: 15px auto 5px; display: block; border-radius: 8px; }
-        .fig-caption { font-size: 0.72em; color: #666; margin: 4px auto 15px; max-width: 400px; text-align: center; line-height: 1.4; }
-        .lang-switcher { display: flex; border: 1px solid #bbb; border-radius: 4px; overflow: hidden; font-size: 0.85em; white-space: nowrap; }
+.lang-switcher { display: flex; border: 1px solid #bbb; border-radius: 4px; overflow: hidden; font-size: 0.85em; white-space: nowrap; }
         .lang-switcher button { background: #ecf0f1; color: #555; border: none; padding: 5px 11px; cursor: pointer; transition: background 0.15s, color 0.15s; }
         .lang-switcher button:first-child { border-right: 1px solid #bbb; }
         .lang-switcher button.active { background: #3498db; color: #fff; font-weight: bold; cursor: default; }
@@ -60,6 +61,15 @@
         .worksheet-box li { margin: 8px 0; }
         .intron { color: #3498db; font-weight: bold; }
         .exon { color: #2c3e50; }
+        .step-nav { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee; }
+        .step-nav-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #ccc; background: #f5f5f5; color: #888; font-size: 0.72em; cursor: pointer; padding: 0; line-height: 1; transition: background 0.15s; }
+        .step-nav-btn:hover:not(.active) { background: #d6e4f0; border-color: #3498db; color: #3498db; }
+        .step-nav-btn.active { background: #3498db; color: #fff; border-color: #3498db; font-weight: bold; cursor: default; }
+        .fig-credit { font-size: 0.75em; text-align: center; margin: 2px auto 12px; }
+        .fig-credit summary { cursor: pointer; list-style: none; color: #bbb; user-select: none; }
+        .fig-credit summary::-webkit-details-marker { display: none; }
+        .fig-credit summary:hover { color: #999; }
+        .fig-credit p { margin: 4px 0; color: #999; line-height: 1.5; max-width: 380px; margin-inline: auto; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -514,7 +524,10 @@ function langSwitcher() {
     </div>`;
 }
 function topBar() {
-    return `<div class="top-bar">${langSwitcher()}</div>`;
+    const homeBtn = state.step > 0
+        ? `<button class="home-btn" onclick="goToStep(0)" title="トップへ / Top">⌂</button>`
+        : `<span></span>`;
+    return `<div class="top-bar">${homeBtn}${langSwitcher()}</div>`;
 }
 function hdr(title) {
     return `<h2>${title}</h2>`;
@@ -611,6 +624,10 @@ function render() {
                     <span>Step ${state.step} / ${state.totalSteps}</span>
                 </div>
                 <div class="progress-track"><div class="progress-bar" style="width:${progress}%"></div></div>
+                <div class="step-nav">${Array.from({length: state.totalSteps}, (_, i) => {
+                    const n = i + 1;
+                    return `<button class="step-nav-btn${n === state.step ? ' active' : ''}" onclick="goToStep(${n})" title="Step ${n}">${n}</button>`;
+                }).join('')}</div>
             </div>
         </div>
     `;
@@ -797,7 +814,10 @@ function getStep21Html() {
         ${hdr(d.title)}
         <p>${d.desc}</p>
         <img src="image_GFP.png" class="protein-img" alt="GFP structure (PDB 1EMA)">
-        <p class="fig-caption">${d.figCaption}</p>
+        <details class="fig-credit">
+            <summary>ⓘ Credit</summary>
+            <p>${d.figCaption}</p>
+        </details>
         <div style="margin-top:20px;">
             <button class="btn" onclick="Sound.playClick(); nextStep()">${d.nextBtn}</button>
         </div>
@@ -822,6 +842,7 @@ function getStep22Html() {
 // ==================== LOGIC ====================
 
 function startLearning() { state.step = 1; render(); }
+function goToStep(n) { if (n >= 0 && n <= state.totalSteps) { state.step = n; render(); } }
 function addBase(base) { state.dna += base; render(); }
 function clearDNA() { state.dna = ''; render(); }
 function setSampleDNA() { state.dna = 'ATGACTTTTTCTTATGGTGTTTGA'; render(); }
