@@ -62,7 +62,12 @@
         .worksheet-box li { margin: 8px 0; }
         .intron { color: #3498db; font-weight: bold; }
         .exon { color: #2c3e50; }
-        .step-nav { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee; }
+        .step-nav-details { margin-top: 8px; border-top: 1px solid #eee; padding-top: 6px; }
+        .step-nav-summary { list-style: none; cursor: pointer; font-size: 0.78em; color: #aaa; user-select: none; text-align: center; padding: 2px 0 4px; }
+        .step-nav-summary::-webkit-details-marker { display: none; }
+        .step-nav-summary:hover { color: #3498db; }
+        .step-nav-details[open] .step-nav-summary { color: #888; }
+        .step-nav { display: grid; grid-template-columns: repeat(8, 26px); gap: 4px; justify-content: center; margin-top: 6px; }
         .step-nav-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #ccc; background: #f5f5f5; color: #888; font-size: 0.72em; cursor: pointer; padding: 0; line-height: 1; transition: background 0.15s; }
         .step-nav-btn:hover:not(.active) { background: #d6e4f0; border-color: #3498db; color: #3498db; }
         .step-nav-btn.active { background: #3498db; color: #fff; border-color: #3498db; font-weight: bold; cursor: default; }
@@ -72,6 +77,22 @@
         .fig-credit summary:hover { color: #999; }
         .fig-credit p { margin: 4px 0; color: #999; line-height: 1.5; max-width: 380px; margin-inline: auto; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .summary-score { font-size: 2rem; font-weight: bold; margin: 10px 0 4px; }
+        .score-num { color: #27ae60; }
+        .score-sep { color: #555; }
+        .score-label { font-size: 1rem; color: #555; }
+        .summary-pct { font-size: 1.1rem; color: #7f8c8d; margin-bottom: 16px; }
+        .summary-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.9em; text-align: left; }
+        .summary-table th { background: #f0f4f8; padding: 6px 8px; border-bottom: 2px solid #ddd; }
+        .summary-table td { padding: 6px 8px; border-bottom: 1px solid #eee; }
+        .sum-icon { text-align: center; font-weight: bold; font-size: 1.1em; width: 40px; }
+        .sum-correct td { background: #f0fdf4; }
+        .sum-correct .sum-icon { color: #27ae60; }
+        .sum-wrong td { background: #fff5f5; }
+        .sum-wrong .sum-icon { color: #e74c3c; }
+        .sum-unanswered td { background: #fafafa; }
+        .sum-unanswered .sum-icon { color: #aaa; }
+        .summary-legend { font-size: 0.82em; color: #777; margin: 8px 0; }
     </style>
 </head>
 <body>
@@ -130,6 +151,7 @@ const C = {
         appTitle: 'セントラルドグマ学習アプリ（真核細胞）- 基本編',
         langToggle: 'English',
         progress: '進捗状況',
+        stepNavToggle: 'ステップ一覧',
         back: '戻る', next: '次へ',
         showCodon: 'コドン表を表示する',
         retry: '再挑戦',
@@ -341,10 +363,20 @@ const C = {
                 title: 'Congratulations!!',
                 desc: 'タンパク質が合成されました！',
                 figCaption: 'GFP（PDB 1EMA）- 画像作成：本田（Molmil／配色変更）。データ出典：RCSB PDB（DOI: 10.2210/pdb1ema/pdb）。詳細：README を参照',
-                nextBtn: '学習課題へ',
+                nextBtn: '結果を見る',
             },
             22: {
-                title: '22. 学習課題（ワークシート）',
+                title: '22. 学習結果サマリー',
+                scoreLabel: '問正解',
+                questionLabel: '問題',
+                resultLabel: '結果',
+                legendCorrect: '正解',
+                legendWrong: '不正解',
+                legendUnanswered: '未回答',
+                nextBtn: '学習課題へ',
+            },
+            23: {
+                title: '23. 学習課題（ワークシート）',
                 tasks: [
                     'クイズの解答と、指定した塩基配列、アミノ酸配列をワークシートに書きなさい。',
                     'デオキシリボヌクレオチドとリボヌクレオチドの化学構造を示しなさい。塩基は簡略化して書いて良い。',
@@ -360,6 +392,7 @@ const C = {
         appTitle: 'Central Dogma Learning App (Eukaryotic Cell) — Basic',
         langToggle: '日本語',
         progress: 'Progress',
+        stepNavToggle: 'Steps',
         back: 'Back', next: 'Next',
         showCodon: 'Show codon table',
         retry: 'Retry',
@@ -571,10 +604,20 @@ Changelog
                 title: 'Congratulations!!',
                 desc: 'Protein synthesized!',
                 figCaption: 'GFP (PDB 1EMA) — image: Honda (Molmil / recolored). Data source: RCSB PDB (DOI: 10.2210/pdb1ema/pdb). See README for details.',
-                nextBtn: 'Go to Worksheet',
+                nextBtn: 'See Results',
             },
             22: {
-                title: '22. Worksheet',
+                title: '22. Results Summary',
+                scoreLabel: 'correct',
+                questionLabel: 'Question',
+                resultLabel: 'Result',
+                legendCorrect: 'Correct',
+                legendWrong: 'Incorrect',
+                legendUnanswered: 'Unanswered',
+                nextBtn: 'Go to Worksheet',
+            },
+            23: {
+                title: '23. Worksheet',
                 tasks: [
                     'Write your quiz answers, the entered base sequence, and the amino acid sequence on the worksheet.',
                     'Draw the chemical structures of a deoxyribonucleotide and a ribonucleotide (bases may be simplified).',
@@ -596,9 +639,10 @@ const state = {
     startCodonIndex: -1,
     stopCodonIndex: -1,
     aminoAcids: [],
-    totalSteps: 22,
+    totalSteps: 23,
     step8Sel: new Set(),
     step8Done: false,
+    quizResults: {},
 };
 
 function t(key) { return C[state.lang][key]; }
@@ -698,6 +742,7 @@ function render() {
         case 19: stepContent = getStep19Html(); break;
         case 21: stepContent = getStep21Html(); break;
         case 22: stepContent = getStep22Html(); break;
+        case 23: stepContent = getStep23Html(); break;
         default: stepContent = '<p>Error</p>';
     }
 
@@ -711,10 +756,13 @@ function render() {
                     <span>Step ${state.step} / ${state.totalSteps}</span>
                 </div>
                 <div class="progress-track"><div class="progress-bar" style="width:${progress}%"></div></div>
-                <div class="step-nav">${Array.from({length: state.totalSteps}, (_, i) => {
-                    const n = i + 1;
-                    return `<button class="step-nav-btn${n === state.step ? ' active' : ''}" onclick="goToStep(${n})" title="Step ${n}">${n}</button>`;
-                }).join('')}</div>
+                <details class="step-nav-details">
+                    <summary class="step-nav-summary">${t('stepNavToggle')} ▾</summary>
+                    <div class="step-nav">${Array.from({length: state.totalSteps}, (_, i) => {
+                        const n = i + 1;
+                        return `<button class="step-nav-btn${n === state.step ? ' active' : ''}" onclick="goToStep(${n})" title="Step ${n}">${n}</button>`;
+                    }).join('')}</div>
+                </details>
             </div>
         </div>
     `;
@@ -837,6 +885,7 @@ function getStep16Html() {
         <details><summary style="cursor:pointer; color:#3498db; margin:10px;">${t('showCodon')}</summary>${generateCodonTableHtml()}</details>
         <div style="margin-top:20px;">
             <button class="btn btn-secondary" onclick="prevStep()">${t('back')}</button>
+            <button id="next-btn" class="btn" style="display:none;" onclick="Sound.playClick(); nextStep()">${t('next')}</button>
         </div>
     `;
 }
@@ -856,6 +905,7 @@ function getStep17Html() {
         <details><summary style="cursor:pointer; color:#3498db; margin:10px;">${t('showCodon')}</summary>${generateCodonTableHtml()}</details>
         <div style="margin-top:20px;">
             <button class="btn btn-secondary" onclick="prevStep()">${t('back')}</button>
+            <button id="next-btn" class="btn" style="display:none;" onclick="Sound.playClick(); nextStep()">${t('next')}</button>
         </div>
     `;
 }
@@ -912,7 +962,43 @@ function getStep21Html() {
 }
 
 function getStep22Html() {
+    const QUIZ_STEPS = [2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14, 15, 16, 17, 20];
+    const results = state.quizResults;
+    let correct = 0;
+    QUIZ_STEPS.forEach(n => { if (results[n] === 'correct') correct++; });
+    const total = QUIZ_STEPS.length;
+    const pct = Math.round((correct / total) * 100);
     const d = s(22);
+    const rowsHtml = QUIZ_STEPS.map(n => {
+        const res = results[n];
+        const title = s(n).title;
+        const icon = res === 'correct' ? '✓' : (res === 'incorrect' ? '✗' : '–');
+        const cls = res === 'correct' ? 'sum-correct' : (res === 'incorrect' ? 'sum-wrong' : 'sum-unanswered');
+        return `<tr class="${cls}"><td>Step ${n}</td><td>${title}</td><td class="sum-icon">${icon}</td></tr>`;
+    }).join('');
+    return `
+        ${hdr(d.title)}
+        <div class="summary-score">
+            <span class="score-num">${correct}</span><span class="score-sep"> / ${total}</span>
+            <span class="score-label"> ${d.scoreLabel}</span>
+        </div>
+        <div class="summary-pct">${pct}%</div>
+        <table class="summary-table">
+            <thead><tr><th>Step</th><th>${d.questionLabel}</th><th>${d.resultLabel}</th></tr></thead>
+            <tbody>${rowsHtml}</tbody>
+        </table>
+        <p class="summary-legend">
+            ✓ ${d.legendCorrect} &nbsp; ✗ ${d.legendWrong} &nbsp; – ${d.legendUnanswered}
+        </p>
+        <div style="margin-top:20px;">
+            <button class="btn btn-secondary" onclick="prevStep()">${t('back')}</button>
+            <button class="btn" onclick="Sound.playClick(); nextStep()">${d.nextBtn}</button>
+        </div>
+    `;
+}
+
+function getStep23Html() {
+    const d = s(23);
     const tasksHtml = d.tasks.map((t, i) => `<li>${t}</li>`).join('');
     return `
         ${hdr(d.title)}
@@ -987,13 +1073,17 @@ function checkSingleQuiz(stepNum, idx, btn) {
         }
     });
     if (isCorrect) {
+        state.quizResults[stepNum] = 'correct';
         Sound.playCorrect();
         showFeedback(`${t('correctPfx')} ${d.explanation}`, 'success');
         const nb = document.getElementById('next-btn');
         if (nb) nb.style.display = 'inline-block';
     } else {
+        if (state.quizResults[stepNum] !== 'correct') state.quizResults[stepNum] = 'incorrect';
         Sound.playWrong();
         showFeedback(`${t('wrongPfx')} ${d.explanation}<br><button class="btn-retry" onclick="Sound.playClick(); render()">${t('retry')}</button>`, 'error');
+        const nb = document.getElementById('next-btn');
+        if (nb) nb.style.display = 'inline-block';
     }
 }
 
@@ -1025,45 +1115,64 @@ function submitStep8() {
         }
     });
     if (isCorrect) {
+        state.quizResults[8] = 'correct';
         Sound.playCorrect();
         state.step8Done = true;
         showFeedback(`${t('correctPfx')} ${d.explanation}`, 'success');
         const nb = document.getElementById('next-btn');
         if (nb) nb.style.display = 'inline-block';
     } else {
+        if (state.quizResults[8] !== 'correct') state.quizResults[8] = 'incorrect';
         Sound.playWrong();
         showFeedback(`${t('wrongPfx')} ${d.explanation}<br><button class="btn-retry" onclick="Sound.playClick(); state.step8Sel.clear(); state.step8Done=false; render()">${t('retry')}</button>`, 'error');
+        const nb = document.getElementById('next-btn');
+        if (nb) nb.style.display = 'inline-block';
     }
 }
 
 function selectStartCodon(index, codon) {
     const d = s(16);
     if (codon === 'AUG') {
+        state.quizResults[16] = 'correct';
         Sound.playCorrect();
         state.startCodonIndex = index;
         showFeedback(`${t('correctPfx')} ${d.explanation}`, 'success');
         setTimeout(nextStep, 1200);
     } else {
+        if (state.quizResults[16] !== 'correct') state.quizResults[16] = 'incorrect';
         Sound.playWrong();
         showFeedback(`${codon}${d.wrongTmpl}`, 'error');
+        const nb = document.getElementById('next-btn');
+        if (nb) nb.style.display = 'inline-block';
     }
 }
 
 function selectStopCodon(index, codon) {
     const d = s(17);
     if (['UAA','UAG','UGA'].includes(codon)) {
+        state.quizResults[17] = 'correct';
         Sound.playCorrect();
         state.stopCodonIndex = index;
         showFeedback(`${t('correctPfx')} ${d.explanation}`, 'success');
         setTimeout(nextStep, 1200);
     } else {
+        if (state.quizResults[17] !== 'correct') state.quizResults[17] = 'incorrect';
         Sound.playWrong();
         showFeedback(d.wrongMsg, 'error');
+        const nb = document.getElementById('next-btn');
+        if (nb) nb.style.display = 'inline-block';
     }
 }
 
 function calcTranslation() {
     const codons = state.mrna.match(/.{1,3}/g) || [];
+    const stops = ['UAA','UAG','UGA'];
+    if (state.startCodonIndex < 0) {
+        state.startCodonIndex = codons.findIndex(c => c === 'AUG');
+    }
+    if (state.stopCodonIndex < 0) {
+        state.stopCodonIndex = codons.findIndex((c, i) => i > state.startCodonIndex && stops.includes(c));
+    }
     state.aminoAcids = [];
     for (let i = state.startCodonIndex; i < state.stopCodonIndex; i++) {
         state.aminoAcids.push(codonTable[codons[i]] || '?');
